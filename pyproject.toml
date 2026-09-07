@@ -1,0 +1,21 @@
+[project]
+name = "adk-tutor"
+version = "0.2.0"
+description = "Google ADK 2.x 教學：概念軌（concept_to_expert）+ 30 天實作軌（30day_practice）"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # ADK 本體。extras 說明：
+    #   a2a      -> Day 19/20 的 A2A Protocol（缺了會 ModuleNotFoundError: No module named 'a2a'）
+    #   database -> Day 09 的 DatabaseSessionService / SqliteSessionService（需要 sqlalchemy）
+    #   eval     -> Day 26 的 adk eval / AgentEvaluator
+    "google-adk[a2a,db,eval,mcp,otel-gcp]>=2.8.0",
+    # (mcp extra 已包含 Day 07 需要的 mcp 套件)
+    "litellm>=1.83.14",      # Day 03/18：接 Claude、本地 gpt-oss 等非 Gemini 模型
+    "python-dotenv>=1.2.2",
+    "jupyter>=1.1.1",
+    "ipykernel>=7.2.0",
+    "streamlit>=1.56.0",     # demo/ 的兩支視覺化 app
+    "pydantic>=2",           # output_schema / node schema
+    "yfinance>=0.2.50",      # Day 06：真實世界的 Function Tool 範例
+]

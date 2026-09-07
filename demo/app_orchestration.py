@@ -25,7 +25,7 @@ from google.adk.tools import FunctionTool
 from google.adk.tools.tool_context import ToolContext
 from google.genai import types
 
-from shared import final_text, get_model, load_settings
+from shared import FALLBACK_MODELS, final_text, get_model, load_settings
 from shared.config import Settings
 
 
@@ -211,9 +211,24 @@ with st.sidebar:
 
     with st.expander("🔌 模型連線", expanded=False):
         defaults = load_settings()
-        api_base = st.text_input("OPENAI_API_BASE", defaults.api_base)
-        api_key = st.text_input("OPENAI_API_KEY", defaults.api_key, type="password")
-        model_name = st.text_input("Model", defaults.model_name)
+        provider = st.selectbox(
+            "Provider", ["gemini", "litellm"],
+            index=0 if defaults.provider == "gemini" else 1,
+            help="gemini 走 Google AI Studio；litellm 可接本地或第三方模型。",
+        )
+        if provider == "gemini":
+            model_name = st.selectbox(
+                "Model", FALLBACK_MODELS,
+                index=FALLBACK_MODELS.index(defaults.model_name)
+                if defaults.model_name in FALLBACK_MODELS else 0,
+                help="免費層配額是每個模型分開算的，撞到 429 就換一個。",
+            )
+            api_key = st.text_input("GOOGLE_API_KEY", defaults.api_key, type="password")
+            api_base = ""
+        else:
+            model_name = st.text_input("Model", defaults.model_name or "openai/openai/gpt-oss-120b")
+            api_base = st.text_input("OPENAI_API_BASE", defaults.api_base or "http://localhost:5052/v1")
+            api_key = st.text_input("OPENAI_API_KEY", defaults.api_key, type="password")
 
     st.subheader("🧳 旅程")
     origin = st.text_input("出發城市（英文）", "Taipei")
@@ -243,7 +258,8 @@ if run_btn:
         f"我想 {depart_date.isoformat()} 從 {origin} 出發去 {destination} 玩 {days} 天"
     )
     st.info(f"使用者輸入：{request}")
-    settings = Settings(api_base=api_base, api_key=api_key, model_name=model_name)
+    settings = Settings(provider=provider, model_name=model_name,
+                            api_key=api_key, api_base=api_base)
     artifact_md = asyncio.run(
         run_pipeline_live(settings, request, save_artifact, placeholders)
     )
