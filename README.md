@@ -1,9 +1,48 @@
 # Google ADK 教學
 
-用 **Google ADK 2.x**（Agent Development Kit）從零打造 AI Agent 的兩軌教材。
-全部是可執行的 Jupyter notebook，輸出都留在檔案裡。
+用 **Google ADK 2.0**（Agent Development Kit）從零打造 AI Agent 的兩軌教材，
+全繁體中文。對象是「會寫 Python，但沒做過 agent」的人。
 
-## 兩條路，挑一條開始
+- **42 本 Jupyter notebook**：概念軌 12 章 + 實作軌 30 天
+- **6 支 Streamlit app**：2 支概念視覺化 + 4 個中小型電商的完整應用
+- 每一格都**真的執行過，輸出留在檔案裡**——還沒申請金鑰也能先讀完再決定要不要動手
+
+## 這份教材跟官方文件差在哪
+
+官方文件告訴你 API 怎麼用；這份教材想回答的是**為什麼會有這個 API，以及它會在哪裡咬你**。
+
+| | |
+|---|---|
+| **每一章都標出「關鍵坑」** | 例如：`InMemoryMemoryService` 是關鍵字比對、對中文幾乎失效；Plugin 一定先於 agent callback 執行**而且會短路它**。這類東西官方文件多半埋在 Caution 區塊，或根本沒寫 |
+| **查證寫成程式，不寫成文字** | 版本會變、模型會下架。那些「翻原始碼確認」的段落都是可執行的 cell，你在自己安裝的版本上重跑，看到的就是你的答案 |
+| **設定集中在一處** | 42 本 notebook 共用 `shared/`，換模型、換 provider 都只改一行，notebook 本身不用動 |
+| **最後有能用的東西** | `demo/` 的四個電商應用不是 hello world，而是同一個問題的四種答案：**這一步該讓誰做** |
+
+## 你會學到什麼
+
+ADK 的元件不少，但可以壓成三層。跑完概念軌，你會知道每個元件為什麼存在、彼此怎麼接：
+
+```
+Layer 1  一個 Agent 由什麼構成
+         身分（name / description / instruction）
+         工具（FunctionTool、ToolContext、內建工具）
+         模型與結構化輸出（retry、temperature、output_schema）
+
+Layer 2  它怎麼跑起來
+         Runner / Session / State
+         Memory / Artifact
+         App / Callbacks / Plugins
+
+Layer 3  多個 Agent 怎麼合作
+         Sequential / Parallel / Loop
+         Orchestration（流程寫死）vs Coordination（模型決定）
+         Graph Workflows（ADK 2.0 的圖形引擎）
+```
+
+實作軌在這之上再往生產環境走：MCP / OpenAPI 整合、A2A 跨程序協作、Live 語音與
+多模態、評估與最佳化、模擬器、企業級安全、觀測、部署。
+
+## 開始你的練習
 
 | | [`concept_to_expert/`](concept_to_expert/) | [`30day_practice/`](30day_practice/) |
 |---|---|---|
@@ -12,7 +51,13 @@
 | **怎麼讀** | 從 00 依序往下 | 從任何一天開始都可以 |
 | **適合** | 第一次接觸 ADK | 已有概念，想深入或查特定主題 |
 
-兩軌互補、互不依賴。建議先跑完概念軌的 `00_setup.ipynb`，確認環境沒問題。
+該挑哪一條：
+
+- **沒碰過 ADK** → 概念軌，從 `00_setup.ipynb` 依序讀下去。
+- **想查特定主題**（A2A？語音？部署？）→ 實作軌，直接跳到那一天，不必補前面。
+- **要做一個能給人看的東西** → `demo/` 的四個電商應用，換掉資料檔就能改成你自己的。
+
+兩軌互補、互不依賴。無論走哪一條，建議先跑完概念軌的 `00_setup.ipynb` 確認環境沒問題。
 
 ## 快速開始
 
@@ -31,47 +76,21 @@ uv run jupyter lab         # 然後打開 concept_to_expert/00_setup.ipynb
 ## 專案結構
 
 ```
-concept_to_expert/     概念軌：12 章 + README 學習地圖
-30day_practice/        實作軌：30 個資料夾 + README 總覽
-shared/                兩軌共用的設定與 helper
-demo/                  兩支概念視覺化 app + 四個電商應用資料夾
-docs/                  演講稿（概念軌三層敘事的來源）
+concept_to_expert/     概念軌：12 章 notebook + 學習地圖 README
+30day_practice/        實作軌：30 個資料夾，每天一份 README + notebook
+demo/                  2 支概念視覺化 app + 4 個電商應用（各自有 README）
+shared/                兩軌共用的模型設定與 helper
+slides/                前十二日的簡報，單一 HTML，用瀏覽器打開就能看
 ```
-
-### `shared/` 在做什麼
 
 所有 notebook 都從這裡拿模型與 helper，所以**一份 `.env` 控制全部**。
 
 | 檔案 | 內容 |
 |---|---|
-| `config.py` | 模型設定。`DEFAULT_MODEL` 集中管理模型 ID、`get_model()` 自動掛重試、`pick_available_model()` 撞配額時自動換 |
+| `config.py` | 模型設定。`DEFAULT_MODEL` 集中管理模型 ID、`get_model()` 自動掛重試、`pick_available_model()` 額度用完時自動換一個 |
 | `runtime.py` | `run_once()` / `ask()` / `new_session()` / `peek_state()`，以及全域節流閘門 |
 | `plugins.py` | `RateLimiter`、`CallCounter`、`OrderTracer` |
 
-```python
-from shared import get_model, run_once
-from google.adk.agents import LlmAgent
-
-agent = LlmAgent(name="bot", model=get_model(), instruction="用繁體中文回答。")
-print(await run_once(agent, "你好", trace=True))
-```
-
-## 撞到 429 的時候
-
-免費層有兩種**分開計算**的配額：
-
-- **一般模型呼叫**：每個模型各自算。`gemini-2.5-flash` 用完了，
-  換 `gemini-flash-lite-latest` 還能跑——不必等隔天。
-- **Google Search grounding**：獨立額度，而且緊很多。換模型救不了。
-
-```python
-import os
-from shared import pick_available_model
-os.environ["ADK_MODEL"] = pick_available_model()
-```
-
-或直接改 `.env` 的 `ADK_MODEL`。另外 `ask()` 有一道全域節流
-（預設 12 RPM），設 `ADK_RPM=0` 可關閉。
 
 ## 換非 Gemini 模型
 
@@ -81,7 +100,7 @@ os.environ["ADK_MODEL"] = pick_available_model()
 ```
 ADK_PROVIDER=litellm
 ADK_MODEL=openai/openai/gpt-oss-120b
-OPENAI_API_BASE=http://localhost:5052/v1
+OPENAI_API_BASE=http://localhost:5000/v1
 OPENAI_API_KEY=dummy
 ```
 
@@ -117,4 +136,7 @@ uv run streamlit run demo/listing_studio/app.py     # 其餘三個換掉資料�
 
 - Python 3.13+
 - `google-adk[a2a,db,eval,mcp,otel-gcp] >= 2.8.0`（1.x 沒有 `Workflow`，第 10 章會跑不起來）
-- Gemini API 金鑰
+- Gemini API 金鑰（免費層就夠跑完全部教材）
+
+免費層的額度用完時（`429`）該怎麼辦，兩軌的 README 各自寫在最後：
+[概念軌](concept_to_expert/#撞到-429-怎麼辦)、[實作軌](30day_practice/#配額提醒)。
