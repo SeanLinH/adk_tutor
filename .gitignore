@@ -34,3 +34,12 @@ Thumbs.db
 *.egg-info/
 dist/
 build/
+
+# notebook 執行過程產生的暫存目錄／檔案
+_workspace/
+_day0*/
+_capstone_demo/
+adk_llms.txt
+*.session.json
+sessions.db
+
