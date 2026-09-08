@@ -43,3 +43,6 @@ adk_llms.txt
 *.session.json
 sessions.db
 
+codex_slide/
+.codex-finalizer/
+slides/

@@ -7,6 +7,11 @@
 - **6 支 Streamlit app**：2 支概念視覺化 + 4 個中小型電商的完整應用
 - 每一格都**真的執行過，輸出留在檔案裡**——還沒申請金鑰也能先讀完再決定要不要動手
 
+## 系列文章
+
+這份教材的寫作過程與心得，同步發表於 iThome 鐵人賽：
+[Google ADK 系列文章](https://ithelp.ithome.com.tw/users/20183762/ironman/9387)
+
 ## 這份教材跟官方文件差在哪
 
 官方文件告訴你 API 怎麼用；這份教材想回答的是**為什麼會有這個 API，以及它會在哪裡咬你**。
@@ -80,7 +85,6 @@ concept_to_expert/     概念軌：12 章 notebook + 學習地圖 README
 30day_practice/        實作軌：30 個資料夾，每天一份 README + notebook
 demo/                  2 支概念視覺化 app + 4 個電商應用（各自有 README）
 shared/                兩軌共用的模型設定與 helper
-slides/                前十二日的簡報，單一 HTML，用瀏覽器打開就能看
 ```
 
 所有 notebook 都從這裡拿模型與 helper，所以**一份 `.env` 控制全部**。
