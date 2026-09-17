@@ -18,4 +18,6 @@ dependencies = [
     "streamlit>=1.56.0",     # demo/ 的兩支視覺化 app
     "pydantic>=2",           # output_schema / node schema
     "yfinance>=0.2.50",      # Day 06：真實世界的 Function Tool 範例
+    "imageio-ffmpeg>=0.6",   # Day 23：在 notebook 裡自己產一段測試影片（內含 ffmpeg 執行檔）
+    "opentelemetry-exporter-otlp-proto-http>=1.42",  # Day 29：把 trace 真的用 OTLP/HTTP 送到 collector
 ]
